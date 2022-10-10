@@ -1,0 +1,39 @@
+version: "3.3"
+services:
+  rdb-host:
+    build: ./rdb-test
+    image: rdb-host-docker
+    restart: always
+    environment:
+      POSTGRES_USER: rdb-username-test
+      POSTGRES_PASSWORD: rdb-password-test
+      POSTGRES_DB: test
+      TZ: "Asia/Tokyo"
+    container_name: rdb-host-docker
+    hostname: rdb-host-docker
+    ports:
+      - 5438:5432
+    volumes:
+      - ./DDL:/var/db/dump/rdb-host-test/
+    networks:
+      - test-network
+
+  go-test:
+    build: .
+    image: go-test-docker
+    container_name: go-test-docker
+    ports:
+    - "9091:9091"
+    depends_on:
+    - rdb-host
+    hostname: go-test-docker
+    volumes:
+    - ./:/app
+    command: reflex -r '\.go' -s go run main.go
+    restart: always
+    networks:
+      - test-network
+networks:
+  test-network:
+    driver: bridge
+
