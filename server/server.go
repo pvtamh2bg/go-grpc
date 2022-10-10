@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	pb "grpc/test/grpc"
+	"grpc/test/rdb"
 	"log"
 	"net"
 
@@ -12,6 +13,7 @@ import (
 
 type server struct {
 	pb.UnimplementedTestServiceServer
+	Conn rdb.Connection
 }
 
 func (s *server) Sum(ctx context.Context, in *pb.SumRequest) (*pb.SumResponse, error) {
@@ -26,8 +28,14 @@ func Handler() {
 		log.Fatalf("failed to listen: %v", err) // TODO 問題点 No.46
 	}
 
+	// connection to RDB
+	conn, err := rdb.Connect()
+	if err != nil {
+		log.Fatalf("Cannot connect to RDB: %v", err) // TODO 問題点 No.46
+	}
+
 	s := grpc.NewServer()
-	pb.RegisterTestServiceServer(s, &server{})
+	pb.RegisterTestServiceServer(s, &server{Conn: conn})
 
 	log.Printf("Listening on %s", port)
 
