@@ -23,6 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TestServiceClient interface {
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
+	// get list invitee
+	ListPostInvitee(ctx context.Context, in *ListPostInviteeRequest, opts ...grpc.CallOption) (*ListPostInviteeResponse, error)
 }
 
 type testServiceClient struct {
@@ -42,11 +44,22 @@ func (c *testServiceClient) Sum(ctx context.Context, in *SumRequest, opts ...grp
 	return out, nil
 }
 
+func (c *testServiceClient) ListPostInvitee(ctx context.Context, in *ListPostInviteeRequest, opts ...grpc.CallOption) (*ListPostInviteeResponse, error) {
+	out := new(ListPostInviteeResponse)
+	err := c.cc.Invoke(ctx, "/test.v1.TestService/ListPostInvitee", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TestServiceServer is the server API for TestService service.
 // All implementations must embed UnimplementedTestServiceServer
 // for forward compatibility
 type TestServiceServer interface {
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
+	// get list invitee
+	ListPostInvitee(context.Context, *ListPostInviteeRequest) (*ListPostInviteeResponse, error)
 	mustEmbedUnimplementedTestServiceServer()
 }
 
@@ -56,6 +69,9 @@ type UnimplementedTestServiceServer struct {
 
 func (UnimplementedTestServiceServer) Sum(context.Context, *SumRequest) (*SumResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
+}
+func (UnimplementedTestServiceServer) ListPostInvitee(context.Context, *ListPostInviteeRequest) (*ListPostInviteeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPostInvitee not implemented")
 }
 func (UnimplementedTestServiceServer) mustEmbedUnimplementedTestServiceServer() {}
 
@@ -88,6 +104,24 @@ func _TestService_Sum_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TestService_ListPostInvitee_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPostInviteeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).ListPostInvitee(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/test.v1.TestService/ListPostInvitee",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).ListPostInvitee(ctx, req.(*ListPostInviteeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TestService_ServiceDesc is the grpc.ServiceDesc for TestService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +132,10 @@ var TestService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Sum",
 			Handler:    _TestService_Sum_Handler,
+		},
+		{
+			MethodName: "ListPostInvitee",
+			Handler:    _TestService_ListPostInvitee_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

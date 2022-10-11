@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	pb "grpc/test/grpc"
@@ -21,15 +22,25 @@ func connect() pb.TestServiceClient {
 }
 
 func callSum(c pb.TestServiceClient) {
-	log.Println("Calling Sum") // dùng Println thay cho log.Fatal vì log.Fatal sẽ dừng chương trình luôn
+	log.Println("Calling Sum")
 	res, err := c.Sum(context.Background(), &pb.SumRequest{Num1: 3, Num2: 5})
 	if err != nil {
-		log.Fatalln("SumError") // dùng Println thay cho log.Fatal vì log.Fatal sẽ dừng chương trình luôn
+		log.Println("SumError")
 	}
 	log.Printf("Sum: %v", res)
+}
+
+func GetInviteeList(c pb.TestServiceClient) {
+	res, err := c.ListPostInvitee(context.Background(), &pb.ListPostInviteeRequest{CompanyId: 1, PostId: 1})
+	if err != nil {
+		log.Println("get invitee error")
+	}
+	fmt.Println(res)
+	log.Printf("Postinvite: %v", res)
 }
 
 func main() {
 	c := connect()
 	callSum(c)
+	GetInviteeList(c)
 }
